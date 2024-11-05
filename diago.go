@@ -541,9 +541,9 @@ func (dg *Diago) InviteBridge(ctx context.Context, recipient sip.Uri, bridge *Br
 	// We allow changing full from header, but we need to make sure it is correctly set
 	if fromHDR := inviteReq.From(); fromHDR != nil {
 		fromHDR.Params["tag"] = sip.GenerateTagN(16)
-		if fromHDR.Address.Host == "" { // IN case caller is set but not hostname
-			fromHDR.Address.Host = dg.client.Hostname()
-		}
+		// if fromHDR.Address.Host == "" { // IN case caller is set but not hostname
+		// 	fromHDR.Address.Host = dg.client.Hostname()
+		// }
 	}
 
 	dialog, err := dialogCli.WriteInvite(ctx, inviteReq)

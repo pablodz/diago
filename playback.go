@@ -14,7 +14,6 @@ import (
 
 	"github.com/emiago/diago/audio"
 	"github.com/emiago/diago/media"
-	"github.com/go-audio/riff"
 )
 
 var (
@@ -161,11 +160,11 @@ func wavCopy(dec *audio.WavReader, playWriter io.Writer, payloadBuf []byte) (int
 			return totalWritten, err
 		}
 
-		if ch.ID != riff.DataFormatID && ch.ID != [4]byte{} {
-			// Until we reach data chunk we will draining
-			ch.Drain()
-			continue
-		}
+		// if ch.ID != riff.DataFormatID && ch.ID != [4]byte{} {
+		// 	// Until we reach data chunk we will draining
+		// 	ch.Drain()
+		// 	continue
+		// }
 
 		n, err := copyWithBuf(ch, playWriter, payloadBuf)
 		totalWritten += n
