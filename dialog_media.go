@@ -385,13 +385,13 @@ func (m *DialogMedia) AudioReaderDTMF() *DTMFReader {
 func (d *DTMFReader) Listen(onDTMF func(dtmf rune) error, dur time.Duration) error {
 	buf := make([]byte, media.RTPBufSize)
 	for {
-		if _, err := d.AudioRead(buf, onDTMF, dur); err != nil {
+		if _, _, err := d.AudioRead(buf, onDTMF, dur); err != nil {
 			return err
 		}
 	}
 }
 
-func (d *DTMFReader) AudioRead(buf []byte, onDTMF func(dtmf rune) error, dur time.Duration) (n int, err error) {
+func (d *DTMFReader) AudioRead(buf []byte, onDTMF func(dtmf rune) error, dur time.Duration) (n int, t uint8, err error) {
 	mediaSession := d.mediaSession
 	if dur > 0 {
 		// Stop RTP
@@ -400,17 +400,17 @@ func (d *DTMFReader) AudioRead(buf []byte, onDTMF func(dtmf rune) error, dur tim
 	}
 	// This is optimal way of reading audio and DTMF
 	dtmfReader := d.dtmfReader
-	n, err = dtmfReader.Read(buf)
+	n, t, err = dtmfReader.Read(buf)
 	if err != nil {
-		return n, err
+		return n, 0, err
 	}
 
 	if dtmf, ok := dtmfReader.ReadDTMF(); ok {
 		if err := onDTMF(dtmf); err != nil {
-			return n, err
+			return n, t, err
 		}
 	}
-	return n, nil
+	return n, t, nil
 }
 
 type DTMFWriter struct {

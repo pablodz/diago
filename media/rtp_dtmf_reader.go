@@ -31,31 +31,34 @@ func NewRTPDTMFReader(codec Codec, packetReader *RTPPacketReader, reader io.Read
 }
 
 // Write is RTP io.Writer which adds more sync mechanism
-func (w *RTPDtmfReader) Read(b []byte) (int, error) {
+func (w *RTPDtmfReader) Read(b []byte) (int, uint8, error) {
 	n, err := w.reader.Read(b)
 	if err != nil {
 		// Signal our reader that no more dtmfs will be read
 		// close(w.dtmfCh)
-		return n, err
+		return n, 0, err
 	}
 
 	// Check is this DTMF
 	hdr := w.packetReader.PacketHeader
 	if hdr.PayloadType != w.codec.PayloadType {
-		return n, nil
+		return n, 0, nil
 	}
 
 	// Now decode DTMF
 	ev := DTMFEvent{}
 	if err := DTMFDecode(b, &ev); err != nil {
 		log.Error().Err(err).Msg("Failed to decode DTMF event")
+		return n, hdr.PayloadType, err
 	}
 	w.processDTMFEvent(ev)
-	return n, nil
+	return n, hdr.PayloadType, nil
 }
 
 func (w *RTPDtmfReader) processDTMFEvent(ev DTMFEvent) {
-	log.Debug().Interface("ev", ev).Msg("Processing DTMF event")
+	if log.Debug().Enabled() {
+		log.Debug().Interface("ev", ev).Msg("Processing DTMF event")
+	}
 	if ev.EndOfEvent {
 		// Does this match to our last ev
 		if w.lastEv.Event != ev.Event {

@@ -158,6 +158,8 @@ func (d *DialogServerSession) answerSession(rtpSess *media.RTPSession) error {
 	// If we do not wait ACK, hanguping call will fail as ACK can be delayed when we are doing Hangup
 	for {
 		select {
+		case <-d.Context().Done():
+			return nil
 		case <-time.After(10 * time.Second):
 			return fmt.Errorf("no ACK received")
 		case state := <-d.StateRead():
